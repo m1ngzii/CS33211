@@ -10,16 +10,15 @@
 #include <pthread.h> 
 #include <semaphore.h> 
 
-#define max_items 2 
+#define maxItems 2 
 
 // shared variables 
-extern int table[max_items]; 
-extern int in, out; 
-
-// semaphores and mutex 
-extern sem_t empty; 
-extern sem_t full; 
-extern pthread_mutex_t mutex; 
+struct sharedData{ 
+    sem_t empty;
+    sem_t full; 
+    sem_t mutex; 
+    int table[maxItems];
+};
 
 
 
