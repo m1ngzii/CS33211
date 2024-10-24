@@ -36,14 +36,6 @@ int main(int argc, char* argv[]){
     sharedData *producer; 
     producer = static_cast<sharedData*>(mmap(0, sizeof(sharedData),PROT_READ | PROT_WRITE, MAP_SHARED, shmShared, 0)); 
     // static_cast returns the value of mmap() to sharedData* and lets producer treat the mapped mem. as an instance
-    // of sharedData allowing the members to have access to it. 
-    // each parameter's meaning : 0 = starting address for mapping
-    // sizeof(sharedData) = establishes the length of the mapping in bytes (ensures that the entire structure is mapped)
-    // PROT_READ | PROT_WRITE are protection flags - specifies that mapped meory is readable + writable by process
-    // MAP_SHARED = updates to the mapped mem. will be available for other processes that map the same shared mem. region
-    // shmShared = shared mem. object
-    // 0 = ofset within the mem. object where the mem. starts. 
-
     sem_init(&(producer->empty), 1, maxItems); // ensuring all empty slots 
     sem_init(&(producer->full), 1, 0); // no filled slots
     sem_init(&(producer->mutex),1,1); 
