@@ -7,47 +7,41 @@
 #include <pthread.h> 
 #include <semaphore.h> 
 #include <unistd.h> 
-#include "shared.hpp" 
+#include <cstdlib> 
+#include <sys/mman.h>
+#include "shared.hpp"
 
-// semaphores and mutex 
-sem_t empty, full; 
-pthread_mutex_t mutex; 
+int main(int argc, char *argv[]){
+    const char* shmPath = "/shMemPath"; 
 
-// shared variables 
-int table[max_items]; 
-int in = 0; 
-int out = 0; 
+    int shmShared = shm_open(shmPath,O_CREAT | O_RDWR, S_IRUSR | S_IWUSR); 
+    if(shmShared == -1){ 
+    std::cerr << "Error handling memory, try again!" << std::endl; 
+    return 1; 
+    }
+
+    sharedData *consumer; 
+    consumer = static_cast<sharedData*>(mmap(nullptr, sizeof(sharedData),PROT_READ | PROT_WRITE, MAP_SHARED, shmShared, 0));
+    if(consumer == MAP_FAILED){
+        std::cerr << "ERROR IN MAPPING SHARED MEMORY." << std::endl; 
+        close(shmShared);
+        return 1; 
+    }
 
 
-void* consumer(void* arg){
-    while(true){
-            while(in == out){
-            sem_wait(&full);
-            pthread_mutex_lock(&mutex); 
-            }
 
-        int item = table[out]; 
-        std::cout << "Consumer has consumed an item : " << item << std::endl; 
-        out = (out + 1) % max_items; 
+    for(int i = 0; i < 5; ++i){
+        sem_wait(&(consumer->full)); 
+        sem_wait(&(consumer->mutex)); 
 
-        pthread_mutex_unlock(&mutex); 
-        sem_post(&empty); 
+        int consumerVal = consumer->table[i % maxItems]; 
+        std::cout << "Consumed : " << consumerVal << std::endl; 
+
+        sem_post(&(consumer->empty)); 
+        sem_post(&(consumer->mutex)); 
 
         sleep(1); 
     }
-
-}
-
-int main(){
-    pthread_t consThread; 
-
-    pthread_create(&consThread, nullptr, consumer, nullptr); 
-
-    pthread_join(consThread,nullptr); 
-
-    pthread_mutex_destroy(&mutex); 
-    sem_destroy(&empty);    
-    sem_destroy(&full); 
-
+    shm_unlink("/shMemPath"); 
     return 0; 
 }
