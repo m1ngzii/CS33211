@@ -36,6 +36,8 @@ int main(int argc, char* argv[]){
     sharedData *producer; 
     producer = static_cast<sharedData*>(mmap(0, sizeof(sharedData),PROT_READ | PROT_WRITE, MAP_SHARED, shmShared, 0)); 
     // static_cast returns the value of mmap() to sharedData* and lets producer treat the mapped mem. as an instance
+
+    
     sem_init(&(producer->empty), 1, maxItems); // ensuring all empty slots 
     sem_init(&(producer->full), 1, 0); // no filled slots
     sem_init(&(producer->mutex),1,1); 
