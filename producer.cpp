@@ -8,50 +8,61 @@
 #include <semaphore.h> 
 #include <unistd.h> 
 #include <cstdlib> 
+#include <sys/mman.h>
 #include "shared.hpp"
 
-// semaphores and mutex 
-sem_t empty, full; 
-pthread_mutex_t mutex; 
+int main(int argc, char* argv[]){
 
-// shared variables 
-int table[max_items]; 
-int in, out = 0; 
-
-void* producer(void* arg){
-    while(true){
-        int item = rand() % 100; 
-
-        sem_wait(&empty); 
-        pthread_mutex_lock(&mutex); 
-
-        table[in] = item; 
-        std::cout << "Producer has produced an item : " << item << std::endl; 
-        in = (in + 1) % max_items; 
-
-        pthread_mutex_unlock(&mutex); 
-        sem_post(&full); 
-
-        sleep(1); 
+    const char* shmPath = "/shMemPath"; 
+    // creating/open shared memory .. size = 0 bytes 
+    int shmShared = shm_open(shmPath, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR ); 
+    if(shmShared == -1){ 
+    std::cerr << "Error handling memory, try again!" << std::endl; 
+    return 1; 
     }
-    return nullptr; 
-}
 
 
-int main() { 
-    pthread_t prodThread; 
+    // ftruncate ensures that the shared memory will not remain stagnant
+    // at 0, allowing the shared mem. object to resize to the amount needed.
+    if(ftruncate(shmShared, sizeof(sharedData)) == -1){ 
+        std::cerr << "Error : ftruncate() has failed, try again." << std::endl; 
+        close(shmShared); 
+        return 1; 
+    } else {
+        ftruncate(shmShared, sizeof(sharedData)); 
+    }
+    
+    // mapping memory
+    sharedData *producer; 
+    producer = static_cast<sharedData*>(mmap(0, sizeof(sharedData),PROT_READ | PROT_WRITE, MAP_SHARED, shmShared, 0)); 
+    // static_cast returns the value of mmap() to sharedData* and lets producer treat the mapped mem. as an instance
+    // of sharedData allowing the members to have access to it. 
+    // each parameter's meaning : 0 = starting address for mapping
+    // sizeof(sharedData) = establishes the length of the mapping in bytes (ensures that the entire structure is mapped)
+    // PROT_READ | PROT_WRITE are protection flags - specifies that mapped meory is readable + writable by process
+    // MAP_SHARED = updates to the mapped mem. will be available for other processes that map the same shared mem. region
+    // shmShared = shared mem. object
+    // 0 = ofset within the mem. object where the mem. starts. 
 
-    sem_init(&empty, 0, max_items); 
-    sem_init(&full, 0, 0); 
-    pthread_mutex_init(&mutex, nullptr); 
+    sem_init(&(producer->empty), 1, maxItems); // ensuring all empty slots 
+    sem_init(&(producer->full), 1, 0); // no filled slots
+    sem_init(&(producer->mutex),1,1); 
 
-    pthread_create(&prodThread, nullptr, producer, nullptr); 
-    pthread_join(prodThread, nullptr); 
+    for(int i = 0; i < 5; ++i){
+        sem_wait(&(producer->empty)); 
+        sem_wait(&(producer->mutex)); 
 
-    pthread_mutex_destroy(&mutex); 
-    sem_destroy(&empty);    
-    sem_destroy(&full); 
+        int producerVal = rand() % 100 + 1; 
+        producer->table[i % maxItems] = producerVal;
+        std::cout << "Produced : " << producerVal << std::endl; 
 
+        sem_post(&(producer->full)); 
+        sem_post(&(producer-> mutex)); 
+        sleep(1); 
+
+
+    }
+
+    shm_unlink("/shMemPath"); 
     return 0; 
-
 }
