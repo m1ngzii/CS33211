@@ -20,6 +20,8 @@ struct sharedData{
     int table[maxItems];
 };
 
+const char* shmPath = "/shMemPath"; 
+
 
 
 
