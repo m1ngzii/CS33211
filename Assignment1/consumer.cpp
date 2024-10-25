@@ -12,16 +12,16 @@
 #include "shared.hpp"
 
 int main(int argc, char *argv[]){
-    const char* shmPath = "/shMemPath"; 
 
-    int shmShared = shm_open(shmPath,O_CREAT | O_RDWR, S_IRUSR | S_IWUSR); 
+    int shmShared = shm_open(shmPath,O_CREAT | O_RDWR, 0666); 
     if(shmShared == -1){ 
     std::cerr << "Error handling memory, try again!" << std::endl; 
     return 1; 
     }
 
+    
     sharedData *consumer; 
-    consumer = static_cast<sharedData*>(mmap(nullptr, sizeof(sharedData),PROT_READ | PROT_WRITE, MAP_SHARED, shmShared, 0));
+    consumer = (sharedData*)(mmap(0, sizeof(sharedData),PROT_READ | PROT_WRITE, MAP_SHARED, shmShared, 0));
     if(consumer == MAP_FAILED){
         std::cerr << "ERROR IN MAPPING SHARED MEMORY." << std::endl; 
         close(shmShared);
@@ -41,6 +41,10 @@ int main(int argc, char *argv[]){
         sem_post(&(consumer->mutex)); 
 
         sleep(1); 
+    }
+
+    if (munmap(consumer, sizeof(sharedData)) == -1) {
+        std::cerr << "Error unmapping shared memory: " << strerror(errno) << std::endl;
     }
     shm_unlink("/shMemPath"); 
     return 0; 
