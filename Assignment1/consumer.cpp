@@ -41,14 +41,14 @@ int main(int argc, char *argv[]) {
 
     for (int i = 0; i < 5; ++i) {
         sem_wait(consumer->full); 
-        pthread_mutex_lock(&(consumer->mutex));  // locking crit. section 
+        sem_wait(consumer->mutex);  // locking crit. section 
 
         std::cout << "Consumed." << std::endl;
 
         consumer->out = (consumer->out + 1) % maxItems;  // keep reiterating 
 
         sem_post(consumer->empty); // incrementing value 
-        pthread_mutex_unlock(&(consumer->mutex)); // leaves crit. section open 
+        sem_post(consumer->mutex); // leaves crit. section open 
     }
 
     if (munmap(consumer, sizeof(sharedData)) == -1) {
