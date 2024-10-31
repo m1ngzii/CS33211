@@ -16,7 +16,7 @@
 struct sharedData{ 
     sem_t *empty;
     sem_t *full; 
-    pthread_mutex_t mutex; 
+    sem_t *mutex; 
     int table[maxItems];
     int in, out; 
 };
