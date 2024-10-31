@@ -12,8 +12,6 @@
 #include "shared.hpp"
 
 int main(int argc, char* argv[]){
-    srand(time(nullptr)); 
-
     int shmShared = shm_open(shmPath, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR); 
     if (shmShared == -1) { 
         std::cerr << "Error creating shared memory: " << strerror(errno) << std::endl; 
