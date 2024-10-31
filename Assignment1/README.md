@@ -1,12 +1,38 @@
 # PRODUCER-CONSUMER ASSIGNMENT - OPERATING SYSTEMS 
 
 # Overview  
-My name is Adrion Thomas and in Assignment 1 of Operating Systems, we had to make a producer that produces a max of 2 items whilst an consumer consumes the items the producer outputs. This assignment utlizies shared memory between the two programs, in my case, we used semaphores to implement a critical section to ensure data consistency. 
+My name is Adrion Thomas and in Assignment 1 of Operating Systems, we had to make a producer that produces a max of 2 items whilst an consumer consumes the items the producer outputs. This assignment utlizies shared memory between the two programs; In my case, we used semaphores to implement a critical section to ensure data consistency and prevent race conditions. 
 
-The two programs are implemented in C++ and both use a shared header file (shared.hpp). 
+Both programs are implemented in C++ and use a shared header file (shared.hpp). 
 
 # How It Works
+In our header file, we have 3 semaphores : empty, full, and a mutex. Empty and full are used for buffer access to the producer and consumer, while the mutex semaphore protects the critical section, ensuring one program is accessing the buffer. Each program iterates the producer-consumer interaction five times.
 
+**Producer** 
+- Waits for a slot to be available in the buffer
+- Locks the critical section
+- Produces an item
+- Unlocks the critical section
+- Signals that a slot has been filled.
+
+**Consumer** 
+- Waits until there is a filled slot
+- Locks critical section
+- Consumes an item
+- Unlocks the critical section
+- Signals that the slot is now empty
+
+# Example Output 
+Produced.
+Consumed.
+Produced.
+Consumed.
+Produced.
+Consumed.
+Produced.
+Consumed.
+Produced.
+Consumed.
 
 
 # Compilation Instructions 
