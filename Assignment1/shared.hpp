@@ -14,13 +14,14 @@
 
 // shared variables 
 struct sharedData{ 
-    sem_t empty;
-    sem_t full; 
-    sem_t mutex; 
+    sem_t *empty;
+    sem_t *full; 
+    pthread_mutex_t mutex; 
     int table[maxItems];
+    int in, out; 
 };
 
-const char* shmPath = "/shMemPath"; 
+const char* shmPath = "/unique_Memory"; 
 
 
 
