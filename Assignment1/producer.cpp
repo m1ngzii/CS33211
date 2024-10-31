@@ -12,6 +12,7 @@
 #include "shared.hpp"
 
 int main(int argc, char* argv[]){
+
     int shmShared = shm_open(shmPath, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR); 
     if (shmShared == -1) { 
         std::cerr << "Error creating shared memory: " << strerror(errno) << std::endl; 
@@ -45,17 +46,15 @@ int main(int argc, char* argv[]){
         return 1; 
     }
 
-    pthread_mutex_init(&(producer->mutex), nullptr); // making an mutex for the producer 
-
     for (int i = 0; i < 5; ++i) {
         sem_wait(producer->empty);
         sleep(1);  // waiting to see if available to output 
-        pthread_mutex_lock(&(producer->mutex)); // locking the critical section - making sure consumer cannot be inside 
+        sem_wait(producer->mutex); // locking the critical section - making sure consumer cannot be inside 
 
         std::cout << "Produced." << std::endl; 
 
         producer->in = (producer->in + 1) % maxItems;  // making it keep reiterating until it ends 
-        pthread_mutex_unlock(&(producer->mutex)); // unlocking the mutex 
+        sem_post(producer->mutex); // unlocking the mutex 
         sem_post(producer->full);  // incrementing value 
     }
 
@@ -65,6 +64,7 @@ int main(int argc, char* argv[]){
     shm_unlink(shmPath);
     sem_close(producer->empty);
     sem_close(producer->full);
+    sem_close(producer->mutex); 
     sem_unlink("/empty_semaphore");
     sem_unlink("/full_semaphore");
 
