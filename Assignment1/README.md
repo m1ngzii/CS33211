@@ -23,16 +23,23 @@ In our header file, we have 3 semaphores : empty, full, and a mutex. Empty and f
 - Signals that the slot is now empty
 
 # Example Output 
-Produced.
-Consumed.
-Produced.
-Consumed.
-Produced.
-Consumed.
-Produced.
-Consumed.
-Produced.
-Consumed.
+Produced : 0 
+Consumed : 0 
+Produced : 1
+Consumed : 1
+Produced : 2 
+Consumed : 2
+Produced : 3
+Consumed : 3 
+Produced : 4 
+Consumed : 4
+
+or 
+Produced : 0 
+Produced : 1 
+
+Consumed : 0 
+Consumed 1 
 
 
 # Compilation Instructions 
