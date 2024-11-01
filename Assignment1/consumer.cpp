@@ -42,7 +42,6 @@ int main(int argc, char *argv[]) {
 
 
     for (int i = 0; i < 5; ++i) {
-        sleep(1); 
         sem_wait(consumer->full); 
         sem_wait(consumer->mutex);  // locking crit. section 
 
