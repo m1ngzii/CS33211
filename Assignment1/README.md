@@ -38,6 +38,7 @@ Consumed.
 # Compilation Instructions 
 g++ producer.cpp -o producer -lpthread
 g++ consumer.cpp -o consumer -lpthread
-then, 
+
+
  ./producer & ./consumer &  
 
