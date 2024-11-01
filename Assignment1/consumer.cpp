@@ -12,6 +12,7 @@
 #include "shared.hpp"
 
 int main(int argc, char *argv[]) {
+    sleep(1);
 
     int shmShared = shm_open(shmPath, O_RDWR, S_IRUSR | S_IWUSR); 
     if(shmShared == -1) { 
@@ -27,10 +28,10 @@ int main(int argc, char *argv[]) {
         close(shmShared);
         return 1; 
     }
-    // initializing semaphores, etc.  
+
+    // initializing semaphores + variables for buffer.  
     consumer->empty = sem_open("/empty_semaphore", 0); 
     consumer->full = sem_open("/full_semaphore", 0); 
-    consumer->out = 0; 
 
     if (consumer->empty == SEM_FAILED || consumer->full == SEM_FAILED) {
         std::cerr << "Error opening semaphores: " << strerror(errno) << std::endl;
@@ -45,7 +46,8 @@ int main(int argc, char *argv[]) {
         sem_wait(consumer->full); 
         sem_wait(consumer->mutex);  // locking crit. section 
 
-        std::cout << "Consumed." << std::endl;
+        std::cout << " " << std::endl; 
+        std::cout << "Consumed : " << i << std::endl;
 
         consumer->out = (consumer->out + 1) % maxItems;  // keep reiterating 
 
@@ -54,7 +56,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (munmap(consumer, sizeof(sharedData)) == -1) {
-        std::cerr << "Error unmapping shared memory: " << strerror(errno) << std::endl;
+         std::cerr << "Error unmapping shared memory: " << strerror(errno) << std::endl;
     }
 
     // cleanup 
