@@ -19,7 +19,8 @@ int main(int argc, char* argv[]){
         return 1; 
     }
 
-    ftruncate(shmShared, sizeof(sharedData)); 
+    ftruncate(shmShared, sizeof(sharedData));
+
 
 
     sharedData *producer = static_cast<sharedData*>(mmap(nullptr, sizeof(sharedData), PROT_READ | PROT_WRITE, MAP_SHARED, shmShared, 0)); 
@@ -32,12 +33,18 @@ int main(int argc, char* argv[]){
     // initalizing the semaphores, mutex, etc. 
     producer->in = 0; 
     producer->out = 0; 
+
+    // unlink semaphores 
     sem_unlink("/empty_semaphore"); 
     sem_unlink("/full_semaphore"); 
+    sem_unlink("/mutex_semaphore"); 
+   
 
     // making sure that the semaphores do not become deprecated when running the programs
     producer->empty = sem_open("/empty_semaphore", O_CREAT, 0666, maxItems);
     producer->full = sem_open("/full_semaphore", O_CREAT, 0666, 0); 
+    producer->mutex = sem_open("/mutex_semaphore", O_CREAT, 0666, 1); 
+
 
     if (producer->empty == SEM_FAILED || producer->full == SEM_FAILED) {
         std::cerr << "Error initializing semaphores: " << strerror(errno) << std::endl; 
@@ -47,26 +54,32 @@ int main(int argc, char* argv[]){
     }
 
     for (int i = 0; i < 5; ++i) {
-        sem_wait(producer->empty);
         sleep(1);  // waiting to see if available to output 
+        sem_wait(producer->empty);
         sem_wait(producer->mutex); // locking the critical section - making sure consumer cannot be inside 
-
-        std::cout << "Produced." << std::endl; 
+    
 
         producer->in = (producer->in + 1) % maxItems;  // making it keep reiterating until it ends 
+        std::cout << " " << std::endl; 
+        std::cout << "Produced : " << i << std::endl; 
+
+
         sem_post(producer->mutex); // unlocking the mutex 
         sem_post(producer->full);  // incrementing value 
+
     }
 
     // cleanup 
-    munmap(producer, sizeof(sharedData));
-    close(shmShared);
+    sem_unlink("/empty_semaphore");
+    sem_unlink("/full_semaphore");
+    sem_unlink("/mutex_semaphore"); 
     shm_unlink(shmPath);
     sem_close(producer->empty);
     sem_close(producer->full);
     sem_close(producer->mutex); 
-    sem_unlink("/empty_semaphore");
-    sem_unlink("/full_semaphore");
+
+    munmap(producer, sizeof(sharedData));
+    close(shmShared);
 
     return 0; 
 }
