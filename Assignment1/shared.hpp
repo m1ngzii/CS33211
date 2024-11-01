@@ -4,8 +4,8 @@
 // October 21st, 2024 
 
 
-#ifndef shared_h 
-#define shared_h 
+#ifndef SHARED_H
+#define SHARED_H
 
 #include <pthread.h> 
 #include <semaphore.h> 
