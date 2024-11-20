@@ -24,7 +24,7 @@ The program reads the following data from an input file :
 - If the system is safe, the program output the safe sequence
 - If the system is unsafe, no sequence will be outputted.
 
-** Example Output** 
+**Example Output** 
 System is in a safe state.
 Safe sequence is: P1 P3 P4 P0 P2
 
