@@ -8,7 +8,7 @@ The project uses C++ and reads input from a file ('input.txt'). The algorithm co
 # How It Works / Documentation
 The Banker's Algorithm is implemented : 
 
-**Input** 
+**Input**
 - Processes : 5 processes (P0-P4)
 - Resources : 3 types of resources (A-C) with availability specified in the input.
 - Allocation : Current allocation of resources to processes
@@ -20,7 +20,7 @@ The program reads the following data from an input file :
 3. Maximum demand matrix
 4. Allocation matrix
 
-**Output** 
+## Output
 - If the system is safe, the program output the safe sequence
 - If the system is unsafe, no sequence will be outputted.
 
